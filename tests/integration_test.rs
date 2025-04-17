@@ -19,10 +19,7 @@ fn test_timetracker_basic() {
 
     cmd.assert()
         .success()
-        .stdout(format!(
-            "#pbi-123456,8h,{}\n",
-            file_path.to_str().unwrap()
-        ));
+        .stdout(format!("#pbi-123456,8h,{}\n", file_path.to_str().unwrap()));
 }
 
 #[test]
@@ -55,11 +52,9 @@ fn test_timetracker_recursive() {
         .arg("-d")
         .arg(journals_2024_dir.to_str().unwrap());
 
-    cmd.assert()
-        .success()
-        .stdout(format!(
-            "#pbi-47,4h,{}\n\"#pbi-123,#pbi-47\",1h30m,{}\n",
-            file_2023_path.to_str().unwrap(),
-            file_2024_path.to_str().unwrap()
-        ));
+    cmd.assert().success().stdout(format!(
+        "#pbi-47,4h,{}\n\"#pbi-123,#pbi-47\",1h30m,{}\n",
+        file_2023_path.to_str().unwrap(),
+        file_2024_path.to_str().unwrap()
+    ));
 }

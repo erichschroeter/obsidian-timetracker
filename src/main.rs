@@ -174,7 +174,8 @@ fn parse_time_entries(content: &str, sort_tags: bool) -> Vec<(String, TimeDurati
 
     let re_heading = Regex::new(r"(?i)^#+\s+Work on \[\[(\d+)\]\]").unwrap();
     let re_time_tracked =
-        Regex::new(r"(?P<text>.*?)(?:\[\s*timeTracked\s*:\s*(?P<duration>[^\]]+)\])(?P<tags>.*)").unwrap();
+        Regex::new(r"(?P<text>.*?)(?:\[\s*timeTracked\s*:\s*(?P<duration>[^\]]+)\])(?P<tags>.*)")
+            .unwrap();
 
     for line in content.lines() {
         if let Some(cap) = re_heading.captures(line) {
@@ -203,49 +204,105 @@ mod tests {
     #[test]
     fn test_parse_duration_hours() {
         let duration = parse_duration("3h");
-        assert_eq!(TimeDuration { hours: 3, minutes: 0, seconds: 0 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 3,
+                minutes: 0,
+                seconds: 0
+            },
+            duration
+        );
     }
 
     #[test]
     fn test_parse_duration_minutes() {
         let duration = parse_duration("45m");
-        assert_eq!(TimeDuration { hours: 0, minutes: 45, seconds: 0 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 0,
+                minutes: 45,
+                seconds: 0
+            },
+            duration
+        );
     }
 
     #[test]
     fn test_parse_duration_seconds() {
         let duration = parse_duration("30s");
-        assert_eq!(TimeDuration { hours: 0, minutes: 0, seconds: 30 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 0,
+                minutes: 0,
+                seconds: 30
+            },
+            duration
+        );
     }
 
     #[test]
     fn test_parse_duration_combined_with_spaces() {
         let duration = parse_duration("2h 10m 15s");
-        assert_eq!(TimeDuration { hours: 2, minutes: 10, seconds: 15 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 2,
+                minutes: 10,
+                seconds: 15
+            },
+            duration
+        );
     }
 
     #[test]
     fn test_parse_duration_combined() {
         let duration = parse_duration("2h15m10s");
-        assert_eq!(TimeDuration { hours: 2, minutes: 15, seconds: 10 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 2,
+                minutes: 15,
+                seconds: 10
+            },
+            duration
+        );
     }
 
     #[test]
     fn test_parse_duration_days() {
         let duration = parse_duration("1d");
-        assert_eq!(TimeDuration { hours: 8, minutes: 0, seconds: 0 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 8,
+                minutes: 0,
+                seconds: 0
+            },
+            duration
+        );
     }
 
     #[test]
     fn test_parse_duration_invalid() {
         let duration = parse_duration("invalid");
-        assert_eq!(TimeDuration { hours: 0, minutes: 0, seconds: 0 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 0,
+                minutes: 0,
+                seconds: 0
+            },
+            duration
+        );
     }
 
     #[test]
     fn test_parse_duration_mixed_valid_invalid() {
         let duration = parse_duration("2h invalid 30m");
-        assert_eq!(TimeDuration { hours: 2, minutes: 30, seconds: 0 }, duration);
+        assert_eq!(
+            TimeDuration {
+                hours: 2,
+                minutes: 30,
+                seconds: 0
+            },
+            duration
+        );
     }
 
     #[test]
@@ -330,6 +387,13 @@ mod tests {
         - [ ] Task 1 [ timeTracked: 1h ] more text
         "#;
         let entries = parse_time_entries(content, true);
-        assert_eq!(TimeDuration { hours: 1, minutes: 0, seconds: 0 }, entries[0].1);
+        assert_eq!(
+            TimeDuration {
+                hours: 1,
+                minutes: 0,
+                seconds: 0
+            },
+            entries[0].1
+        );
     }
 }
