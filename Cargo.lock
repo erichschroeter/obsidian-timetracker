@@ -155,6 +155,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "dedent"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8a3dee4e932355439992a45dc631b0979abf9c677958674bd94298bf9002870"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "difflib"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -460,6 +471,7 @@ dependencies = [
  "assert_cmd",
  "clap",
  "csv",
+ "dedent",
  "env_logger",
  "log",
  "regex",

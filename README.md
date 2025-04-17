@@ -3,6 +3,11 @@
   - [Usage](#usage)
     - [Installation](#installation)
     - [Running the Program](#running-the-program)
+  - [Examples](#examples)
+    - [Basic Usage](#basic-usage)
+    - [Using with `xsv`](#using-with-xsv)
+    - [Recursive Search](#recursive-search)
+    - [Recursive Search with `xsv`](#recursive-search-with-xsv)
   - [Developing](#developing)
     - [Running Tests](#running-tests)
     - [Code Formatting](#code-formatting)
@@ -42,6 +47,31 @@ Run the program with the following options:
 Example:
 ```bash
 ./target/release/timetracker -d ./journals -r -v info -o output.csv
+```
+
+## Examples
+
+### Basic Usage
+```bash
+timetracker -d ~/Documents/ObsidianVault/Journals/
+```
+
+### Using with `xsv`
+You can pipe the output of `timetracker` into [xsv](https://github.com/BurntSushi/xsv) to format it as a table:
+```bash
+timetracker -d ~/Documents/ObsidianVault/Journals/ | xsv table
+```
+
+### Recursive Search
+To include subdirectories, use the `-r` flag:
+```bash
+timetracker -r -d ~/Documents/ObsidianVault/Journals/
+```
+
+### Recursive Search with `xsv`
+Combine recursive search with [xsv](https://github.com/BurntSushi/xsv) for a formatted table:
+```bash
+timetracker -r -d ~/Documents/ObsidianVault/Journals/ | xsv table
 ```
 
 ## Developing

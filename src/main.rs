@@ -162,7 +162,7 @@ fn extract_tags(task_text: &str, current_pbi: &Option<String>, sort_tags: bool) 
     }
 
     if tags.is_empty() {
-        "untagged".to_string()
+        "".to_string()
     } else {
         tags.join(",")
     }
@@ -173,15 +173,25 @@ fn parse_time_entries(content: &str, sort_tags: bool) -> Vec<(String, TimeDurati
     let mut current_pbi: Option<String> = None;
 
     let re_heading = Regex::new(r"(?i)^#+\s+Work on \[\[(\d+)\]\]").unwrap();
+    let re_generic_heading = Regex::new(r"(?i)^#+\s+").unwrap(); // Matches any Markdown header
     let re_time_tracked =
         Regex::new(r"(?P<text>.*?)(?:\[\s*timeTracked\s*:\s*(?P<duration>[^\]]+)\])(?P<tags>.*)")
             .unwrap();
 
     for line in content.lines() {
+        log::debug!("Processing line: {}", line);
         if let Some(cap) = re_heading.captures(line) {
             current_pbi = Some(format!("#pbi-{}", &cap[1]));
+            log::debug!("Found PBI: {:?}", current_pbi);
             continue;
         }
+
+        if re_generic_heading.is_match(line) {
+            current_pbi = None; // Reset PBI when encountering a generic Markdown header
+            log::debug!("Resetting current PBI due to generic header");
+            continue;
+        }
+        log::debug!("Current PBI: {:?}", current_pbi);
 
         if let Some(cap) = re_time_tracked.captures(line) {
             let task_text = cap.name("text").map_or("", |m| m.as_str());
@@ -190,6 +200,11 @@ fn parse_time_entries(content: &str, sort_tags: bool) -> Vec<(String, TimeDurati
             let combined_text = format!("{} {}", task_text, tags_text).trim().to_string();
             let tag_str = extract_tags(&combined_text, &current_pbi, sort_tags);
             let duration = parse_duration(duration_text);
+            log::debug!(
+                "Parsed duration: {} from text: {}",
+                format_duration(&duration),
+                duration_text
+            );
             results.push((tag_str, duration));
         }
     }
@@ -200,6 +215,7 @@ fn parse_time_entries(content: &str, sort_tags: bool) -> Vec<(String, TimeDurati
 #[cfg(test)]
 mod tests {
     use super::*;
+    use dedent::dedent;
 
     #[test]
     fn test_parse_duration_hours() {
@@ -342,7 +358,7 @@ mod tests {
         let task_text = "Complete task";
         let current_pbi = None;
         let tags = extract_tags(task_text, &current_pbi, false);
-        assert_eq!("untagged", tags);
+        assert_eq!("", tags);
     }
 
     #[test]
@@ -363,22 +379,26 @@ mod tests {
 
     #[test]
     fn test_parse_time_entries_with_sorted_tags() {
-        let content = r#"
+        let content = dedent!(
+            r#"
         # Work on [[123]]
         - [ ] Task 1 [ timeTracked: 1h ] #c #a #b
-        "#;
+        "#
+        );
         let entries = parse_time_entries(content, true);
-        assert_eq!("#a,#b,#c", entries[0].0);
+        assert_eq!("#a,#b,#c,#pbi-123", entries[0].0);
     }
 
     #[test]
     fn test_parse_time_entries_with_unsorted_tags() {
-        let content = r#"
+        let content = dedent!(
+            r#"
         # Work on [[123]]
         - [ ] Task 1 [ timeTracked: 1h ] #c #a #b
-        "#;
+        "#
+        );
         let entries = parse_time_entries(content, false);
-        assert_eq!("#c,#a,#b", entries[0].0);
+        assert_eq!("#pbi-123,#c,#a,#b", entries[0].0);
     }
 
     #[test]
