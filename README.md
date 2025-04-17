@@ -7,6 +7,7 @@
     - [Running Tests](#running-tests)
     - [Code Formatting](#code-formatting)
     - [Linting](#linting)
+    - [Continuous Integration](#continuous-integration)
 
 TimeTracker is a command-line tool for parsing Markdown journals to extract time-tracking information and export it to a CSV file.
 
@@ -67,5 +68,13 @@ Check for common issues using:
 ```bash
 cargo clippy
 ```
+
+### Continuous Integration
+
+This project uses GitHub Actions for Continuous Integration (CI). The CI pipeline ensures that:
+1. All tests pass (`cargo test`).
+2. Code formatting is correct (`cargo fmt --check`).
+
+The CI workflow is defined in `.github/workflows/ci.yml` and runs automatically on every push and pull request.
 
 Contributions are welcome! Feel free to open issues or submit pull requests.
