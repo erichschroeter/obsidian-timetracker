@@ -4,6 +4,7 @@ use clap::{Arg, ArgAction, Command};
 use csv::Writer;
 use log::{LevelFilter, debug};
 use regex::Regex;
+use std::collections::HashMap;
 use std::error::Error;
 use std::ffi::OsStr;
 use std::fs;
@@ -49,6 +50,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Print only the basename of the file path")
                 .action(ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new("accumulate")
+                .short('a')
+                .long("accumulate")
+                .help("Accumulate timeTracked values associated with tags")
+                .action(ArgAction::SetTrue),
+        )
         .get_matches();
 
     let level = match matches.get_one::<String>("verbosity").map(|s| s.as_str()) {
@@ -65,6 +73,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let dirs = matches.get_many::<String>("directory").unwrap();
     let output = matches.get_one::<String>("output");
     let use_basename = matches.get_flag("basename");
+    let accumulate = matches.get_flag("accumulate");
 
     let mut entries = vec![];
     for dir in dirs {
@@ -81,20 +90,48 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut csv_writer = Writer::from_writer(&mut writer);
 
-    for entry in entries {
-        debug!("parsing {}", entry.display());
-        let content = fs::read_to_string(&entry)?;
-        for (tag, duration) in parse_time_entries(&content, true) {
-            let file_path = if use_basename {
-                entry.file_name().unwrap().to_string_lossy().into_owned()
-            } else {
-                entry.to_string_lossy().into_owned()
-            };
+    if accumulate {
+        let mut accumulated: HashMap<String, (TimeDuration, Vec<String>)> = HashMap::new();
+        for entry in entries {
+            debug!("parsing {}", entry.display());
+            let content = fs::read_to_string(&entry)?;
+            for (tag, duration) in parse_time_entries(&content, true) {
+                let file_path = if use_basename {
+                    entry.file_name().unwrap().to_string_lossy().into_owned()
+                } else {
+                    entry.to_string_lossy().into_owned()
+                };
+                let entry = accumulated.entry(tag).or_insert((TimeDuration::default(), vec![]));
+                entry.0.hours += duration.hours;
+                entry.0.minutes += duration.minutes;
+                entry.0.seconds += duration.seconds;
+                entry.1.push(file_path);
+            }
+        }
+        for (tag, (duration, paths)) in accumulated {
+            let paths_joined = paths.join(",");
             csv_writer.write_record(&[
                 tag,
                 format_duration(&duration),
-                file_path,
+                paths_joined,
             ])?;
+        }
+    } else {
+        for entry in entries {
+            debug!("parsing {}", entry.display());
+            let content = fs::read_to_string(&entry)?;
+            for (tag, duration) in parse_time_entries(&content, true) {
+                let file_path = if use_basename {
+                    entry.file_name().unwrap().to_string_lossy().into_owned()
+                } else {
+                    entry.to_string_lossy().into_owned()
+                };
+                csv_writer.write_record(&[
+                    tag,
+                    format_duration(&duration),
+                    file_path,
+                ])?;
+            }
         }
     }
     csv_writer.flush()?;

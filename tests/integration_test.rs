@@ -143,3 +143,36 @@ fn test_timetracker_pbi_in_multiple_sections() {
         file_path.to_str().unwrap()
     ));
 }
+
+#[test]
+fn test_timetracker_accumulate() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let journals_dir = temp_dir.path().join("Journals");
+    fs::create_dir(&journals_dir).unwrap();
+
+    let file_path_1 = journals_dir.join("2025-01-01.md");
+    let file_path_2 = journals_dir.join("2025-01-02.md");
+
+    fs::write(
+        &file_path_1,
+        "- #pbi-123456 Task A [timeTracked: 4h]",
+    )
+    .unwrap();
+
+    fs::write(
+        &file_path_2,
+        "- #pbi-123456 Task B [timeTracked: 3h]",
+    )
+    .unwrap();
+
+    let mut cmd = Command::cargo_bin("timetracker").unwrap();
+    cmd.arg("--accumulate")
+        .arg("-d")
+        .arg(journals_dir.to_str().unwrap());
+
+    cmd.assert().success().stdout(format!(
+        "#pbi-123456,7h,\"{},{}\"\n",
+        file_path_1.to_str().unwrap(),
+        file_path_2.to_str().unwrap()
+    ));
+}
