@@ -43,6 +43,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Output CSV file")
                 .value_name("FILE"),
         )
+        .arg(
+            Arg::new("basename")
+                .long("basename")
+                .help("Print only the basename of the file path")
+                .action(ArgAction::SetTrue),
+        )
         .get_matches();
 
     let level = match matches.get_one::<String>("verbosity").map(|s| s.as_str()) {
@@ -58,6 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let recursive = matches.get_flag("recursive");
     let dirs = matches.get_many::<String>("directory").unwrap();
     let output = matches.get_one::<String>("output");
+    let use_basename = matches.get_flag("basename");
 
     let mut entries = vec![];
     for dir in dirs {
@@ -78,10 +85,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         debug!("parsing {}", entry.display());
         let content = fs::read_to_string(&entry)?;
         for (tag, duration) in parse_time_entries(&content, true) {
+            let file_path = if use_basename {
+                entry.file_name().unwrap().to_string_lossy().into_owned()
+            } else {
+                entry.to_string_lossy().into_owned()
+            };
             csv_writer.write_record(&[
                 tag,
                 format_duration(&duration),
-                entry.to_string_lossy().into_owned(),
+                file_path,
             ])?;
         }
     }
