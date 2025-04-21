@@ -153,17 +153,9 @@ fn test_timetracker_accumulate() {
     let file_path_1 = journals_dir.join("2025-01-01.md");
     let file_path_2 = journals_dir.join("2025-01-02.md");
 
-    fs::write(
-        &file_path_1,
-        "- #pbi-123456 Task A [timeTracked: 4h]",
-    )
-    .unwrap();
+    fs::write(&file_path_1, "- #pbi-123456 Task A [timeTracked: 4h]").unwrap();
 
-    fs::write(
-        &file_path_2,
-        "- #pbi-123456 Task B [timeTracked: 3h]",
-    )
-    .unwrap();
+    fs::write(&file_path_2, "- #pbi-123456 Task B [timeTracked: 3h]").unwrap();
 
     let mut cmd = Command::cargo_bin("timetracker").unwrap();
     cmd.arg("--accumulate")

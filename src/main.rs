@@ -101,7 +101,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     entry.to_string_lossy().into_owned()
                 };
-                let entry = accumulated.entry(tag).or_insert((TimeDuration::default(), vec![]));
+                let entry = accumulated
+                    .entry(tag)
+                    .or_insert((TimeDuration::default(), vec![]));
                 entry.0.hours += duration.hours;
                 entry.0.minutes += duration.minutes;
                 entry.0.seconds += duration.seconds;
@@ -110,11 +112,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         for (tag, (duration, paths)) in accumulated {
             let paths_joined = paths.join(",");
-            csv_writer.write_record(&[
-                tag,
-                format_duration(&duration),
-                paths_joined,
-            ])?;
+            csv_writer.write_record(&[tag, format_duration(&duration), paths_joined])?;
         }
     } else {
         for entry in entries {
@@ -126,11 +124,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     entry.to_string_lossy().into_owned()
                 };
-                csv_writer.write_record(&[
-                    tag,
-                    format_duration(&duration),
-                    file_path,
-                ])?;
+                csv_writer.write_record(&[tag, format_duration(&duration), file_path])?;
             }
         }
     }
