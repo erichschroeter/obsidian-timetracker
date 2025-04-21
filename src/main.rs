@@ -147,6 +147,7 @@ fn collect_entries(
             collect_entries(&path, true, entries)?;
         }
     }
+    entries.sort();
     Ok(())
 }
 
